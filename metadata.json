@@ -1,0 +1,5 @@
+{
+  "name": "Marketerz Prompt Engineer",
+  "description": "An application that takes a marketing idea and generates five distinct, optimized prompts for a generative AI model, covering strategy, creative copy, technical specs, social media hooks, and image generation.",
+  "requestFramePermissions": []
+}
