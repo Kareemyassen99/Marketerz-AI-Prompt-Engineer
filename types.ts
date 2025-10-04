@@ -30,7 +30,7 @@ export interface PromptTemplate {
   category: PromptCategory;
 }
 
-export const ALL_PROMPT_CATEGORIES = ['Strategy', 'Creative Copy', 'Technical Spec', 'Social Hooks', 'Image Prompt'] as const;
+export const ALL_PROMPT_CATEGORIES = ['Strategy', 'Creative Copy', 'Technical Spec', 'Social Hooks', 'Image Prompt', 'Video Prompt'] as const;
 export type PromptCategory = typeof ALL_PROMPT_CATEGORIES[number];
 
 export interface Settings {

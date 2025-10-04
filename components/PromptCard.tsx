@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import type { GeneratedPrompt, SharedPromptData } from '../types';
-import { generateImage } from '../services/geminiService';
+import { generateImage, generateVideo } from '../services/geminiService';
 
 interface PromptCardProps {
   idea: string;
@@ -17,7 +16,8 @@ const CategoryIcon: React.FC<{ category: string }> = ({ category }) => {
     'Creative Copy': <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" /></svg>,
     'Technical Spec': <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" /></svg>,
     'Social Hooks': <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0 0 21 18V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v12a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>,
-    'Image Prompt': <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm1.5-6a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" /></svg>,
+    'Image Prompt': <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" /></svg>,
+    'Video Prompt': <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9A2.25 2.25 0 0 0 4.5 18.75Z" /></svg>,
   };
   return iconMap[category] || <div className="w-6 h-6"></div>;
 };
@@ -29,6 +29,10 @@ const PromptCard: React.FC<PromptCardProps> = ({ idea, promptData, onRegenerate,
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState<boolean>(false);
   const [imageError, setImageError] = useState<string | null>(null);
+  const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
+  const [isGeneratingVideo, setIsGeneratingVideo] = useState<boolean>(false);
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const [videoStatus, setVideoStatus] = useState<string | null>(null);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(prompt);
@@ -70,6 +74,24 @@ const PromptCard: React.FC<PromptCardProps> = ({ idea, promptData, onRegenerate,
     }
   };
 
+  const handleGenerateVideo = async () => {
+    setIsGeneratingVideo(true);
+    setVideoError(null);
+    setGeneratedVideoUrl(null);
+    setVideoStatus(null);
+    try {
+        const videoUrl = await generateVideo(prompt, (status) => {
+            setVideoStatus(status);
+        });
+        setGeneratedVideoUrl(videoUrl);
+    } catch (err) {
+        setVideoError(err instanceof Error ? err.message : 'An unknown error occurred during video generation.');
+    } finally {
+        setIsGeneratingVideo(false);
+        setVideoStatus(null);
+    }
+  };
+
 
   return (
     <div className="bg-slate-800/50 border border-slate-700 rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:border-cyan-500/50">
@@ -98,7 +120,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ idea, promptData, onRegenerate,
            <div className="absolute top-2 right-2 flex items-center gap-2">
             <button
               onClick={() => onRegenerate(category)}
-              disabled={isRegenerating || isGeneratingImage}
+              disabled={isRegenerating || isGeneratingImage || isGeneratingVideo}
               className="p-2 bg-slate-600 rounded-md hover:bg-slate-500 text-slate-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               title="Regenerate this prompt"
             >
@@ -115,7 +137,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ idea, promptData, onRegenerate,
             </button>
             <button
               onClick={handleShare}
-              disabled={isRegenerating || shared || isGeneratingImage}
+              disabled={isRegenerating || shared || isGeneratingImage || isGeneratingVideo}
               className="p-2 bg-slate-600 rounded-md hover:bg-slate-500 text-slate-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               title="Copy share link"
             >
@@ -129,7 +151,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ idea, promptData, onRegenerate,
             </button>
             <button
               onClick={handleCopy}
-              disabled={isRegenerating || isGeneratingImage}
+              disabled={isRegenerating || isGeneratingImage || isGeneratingVideo}
               className="p-2 bg-slate-600 rounded-md hover:bg-slate-500 text-slate-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               title="Copy prompt"
             >
@@ -179,6 +201,43 @@ const PromptCard: React.FC<PromptCardProps> = ({ idea, promptData, onRegenerate,
                         <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm1.5-6a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
                     </svg>
                     <span>{generatedImage ? 'Regenerate Image' : 'Generate Image'}</span>
+                </button>
+            )}
+        </div>
+      )}
+      {category === 'Video Prompt' && (
+        <div className="p-5 border-t border-slate-700 space-y-4">
+            {generatedVideoUrl && (
+                <div>
+                    <h5 className="text-base font-semibold text-slate-300 mb-2">Generated Video:</h5>
+                    <video src={generatedVideoUrl} controls className="rounded-lg w-full border-2 border-slate-600" />
+                </div>
+            )}
+            {isGeneratingVideo && (
+                <div className="flex flex-col items-center justify-center gap-2 text-slate-400 h-24 bg-slate-700/50 rounded-lg p-4">
+                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span className="text-sm font-semibold">{videoStatus || 'Generating your video...'}</span>
+                    <span className="text-xs text-slate-500">This can take several minutes. Please be patient.</span>
+                </div>
+            )}
+            {videoError && (
+                <div className="text-red-300 text-sm text-center p-3 bg-red-900/50 rounded-md border border-red-700">
+                    <p><strong className="font-semibold">Video Generation Failed:</strong> {videoError}</p>
+                </div>
+            )}
+            {!isGeneratingVideo && (
+                <button
+                    onClick={handleGenerateVideo}
+                    disabled={isRegenerating}
+                    className="w-full flex items-center justify-center gap-2 bg-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-500 transition-all duration-300 disabled:bg-slate-700 disabled:cursor-not-allowed"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                       <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9A2.25 2.25 0 0 0 4.5 18.75Z" />
+                    </svg>
+                    <span>{generatedVideoUrl ? 'Regenerate Video' : 'Generate Video'}</span>
                 </button>
             )}
         </div>

@@ -42,6 +42,18 @@ const templates: PromptTemplate[] = [
     description: "Craft a detailed prompt for an AI image generator to create a compelling visual for an advertisement.",
     template: `AI image generation prompt for an ad campaign.\n\nStyle: [e.g., Photorealistic, Cinematic, 3D Render, illustration]\nSubject: [Detailed description of the main subject]\nScene: [Describe the background, lighting, and environment]\nMood/Atmosphere: [e.g., Energetic and vibrant, Calm and serene, Mysterious]\nColor Palette: [e.g., Warm tones, Cool blues, Monochromatic]\nAspect Ratio: [e.g., 16:9 for banners, 1:1 for social media posts]\nNegative Prompts: [Things to avoid, e.g., text, blurry background]`,
     category: 'Image Prompt'
+  },
+  {
+    title: "Cinematic Video Ad",
+    description: "Create a scene-by-scene script for a short, engaging video advertisement.",
+    template: `Short video ad script (30 seconds).\n\nProduct: [Your Product]\nTarget Audience: [Describe Audience]\n\nScene 1 (0-5s):\n- Visuals: [Describe a captivating opening shot]\n- Voiceover/Text: [A strong hook or question]\n\nScene 2 (5-20s):\n- Visuals: [Show the product in action, demonstrating its key benefit]\n- Voiceover/Text: [Explain the problem and how the product solves it]\n\nScene 3 (20-25s):\n- Visuals: [Show a happy customer or a satisfying result]\n- Voiceover/Text: [Reinforce the main benefit]\n\nScene 4 (25-30s):\n- Visuals: [Product shot with clear branding and logo]\n- Voiceover/Text: [Clear Call to Action, e.g., 'Shop Now', 'Learn More']`,
+    category: 'Video Prompt'
+  },
+  {
+    title: "Unboxing Video Concept",
+    description: "Structure an 'unboxing' style video to showcase a product's packaging and first impressions.",
+    template: `Unboxing video concept for [Product Name].\n\nKey Message: Highlight the premium experience and key features from the moment it's opened.\nMusic/Voiceover Style: [e.g., Upbeat, calm, voiceover with key points]\n\nShot 1: The box arrives. Show the branded packaging.\nShot 2: The unboxing process. Slow, satisfying shots of opening the package.\nShot 3: The 'reveal' of the product inside. Focus on the main product.\nShot 4: Close-ups of key features or included accessories.\nShot 5: Final shot of the product set up and ready to use, with a call to action overlay.`,
+    category: 'Video Prompt'
   }
 ];
 

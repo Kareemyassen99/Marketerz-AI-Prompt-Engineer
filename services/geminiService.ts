@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from '@google/genai';
 import type { GeneratedPrompt, Settings } from '../types';
 
@@ -13,7 +12,7 @@ const promptSchema = {
   properties: {
     category: {
       type: Type.STRING,
-      description: 'The category of the prompt. Must be one of: Strategy, Creative Copy, Technical Spec, Social Hooks, Image Prompt.',
+      description: 'The category of the prompt. Must be one of: Strategy, Creative Copy, Technical Spec, Social Hooks, Image Prompt, Video Prompt.',
     },
     purpose: {
       type: Type.STRING,
@@ -53,6 +52,7 @@ The available categories are:
 3.  **Technical Spec:** For outlining the technical requirements of a digital asset, like a landing page or app feature.
 4.  **Social Hooks:** For creating short, engaging social media posts or video hooks.
 5.  **Image Prompt:** For generating a detailed prompt for an image generation model (e.g., Midjourney, DALL-E).
+6.  **Video Prompt:** For creating a scene-by-scene script or storyboard for a short video ad.
 
 For each of the requested prompts, you MUST provide:
 - The \`category\` of the prompt.
@@ -114,6 +114,7 @@ The prompt must target the output category: **${category}**
 - **Technical Spec:** For outlining the technical requirements of a digital asset, like a landing page or app feature.
 - **Social Hooks:** For creating short, engaging social media posts or video hooks.
 - **Image Prompt:** For generating a detailed prompt for an image generation model (e.g., Midjourney, DALL-E).
+- **Video Prompt:** For creating a scene-by-scene script or storyboard for a short video ad.
 
 You MUST provide:
 - The \`category\` of the prompt, which must be "${category}".
@@ -177,4 +178,57 @@ export const generateImage = async (prompt: string): Promise<string> => {
     console.error("Error calling Gemini Image API:", error);
     throw new Error("Failed to communicate with the image generation model.");
   }
+};
+
+export const generateVideo = async (prompt: string, onStatusUpdate: (status: string) => void): Promise<string> => {
+    onStatusUpdate('Sending request to video model...');
+    try {
+        let operation = await ai.models.generateVideos({
+            model: 'veo-2.0-generate-001',
+            prompt: prompt,
+            config: {
+                numberOfVideos: 1
+            }
+        });
+
+        onStatusUpdate('The AI is warming up its cameras...');
+
+        const reassuringMessages = [
+            "Storyboarding your video...",
+            "Setting up the virtual set...",
+            "Casting digital actors...",
+            "Rendering the first few scenes...",
+            "Applying visual effects...",
+            "Finalizing the soundtrack...",
+            "Polishing the final cut..."
+        ];
+        let messageIndex = 0;
+
+        while (!operation.done) {
+            onStatusUpdate(reassuringMessages[messageIndex % reassuringMessages.length]);
+            messageIndex++;
+            await new Promise(resolve => setTimeout(resolve, 10000)); // Poll every 10 seconds
+            operation = await ai.operations.getVideosOperation({ operation: operation });
+        }
+
+        onStatusUpdate('Video generation complete!');
+
+        const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+        if (downloadLink) {
+            // The API returns a direct download link that needs the API key appended for auth.
+            // To display it in a <video> tag, we need to fetch it as a blob and create an object URL.
+            const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+            if (!response.ok) {
+                throw new Error(`Failed to download video file: ${response.statusText}`);
+            }
+            const videoBlob = await response.blob();
+            return URL.createObjectURL(videoBlob);
+
+        } else {
+            throw new Error("Video generation finished, but no download link was provided.");
+        }
+    } catch (error) {
+        console.error("Error calling Gemini Video API:", error);
+        throw new Error("Failed to communicate with the video generation model.");
+    }
 };
